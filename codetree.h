@@ -30,7 +30,7 @@ namespace code_tree {
         updateWeights(node->parent);
     }
 
-    void resolve(Node* problem){
+    /*void resolve(Node* problem){
         Node* next=iterateNext(problem);
         while((next=iterateNext(next))->weight<problem->weight);
 
@@ -44,32 +44,10 @@ namespace code_tree {
         next->parent=parentProblem;
         updateWeights(problem);
         updateWeights(next);
-    }
+    }*/
 
     bool isLeft(Node* node){
         return node==node->parent->left;
-    }
-
-    Node* iterateNextOnThisLevel(Node* node){
-        if(node->parent==nullptr)return nullptr;
-        if(isLeft(node))return node->parent->right; // правый сосед - следующий для левого узла
-        node=iterateNext(node->parent);             // узел того же уровня, но доступный через предков
-        if(node==nullptr)return nullptr;            // уровень закончен, дошли до корня
-        return node->left;
-    }
-
-    Node* iterateNext(Node* node){
-        Node* nextOnLevel=iterateNextOnThisLevel(node);
-        if(nextOnLevel!=nullptr)return nextOnLevel;
-        // переход на уровень выше
-        int i=0;
-        while(node->parent!=nullptr){
-            node=node->parent;
-            i++;
-        }
-        if(i==0)return nullptr;    // корень - самый последний элемент
-        for(;i>1;i--)node=node->left;
-        return node;
     }
 
     // сверху - влево
@@ -116,6 +94,31 @@ namespace code_tree {
             }
         }
         return current;
+    }
+
+    Node* findFirstOnLevel(Node* root, int level){
+        if(root==nullptr)return nullptr;
+        if(level==1)return root;
+        Node* f=findFirstOnLevel(root->left,level-1);
+        if(f!=nullptr)return f;
+        f=findFirstOnLevel(root->right,level-1);
+        return f;
+    }
+
+    Node* firstOnPrevLevel(Node* current){
+        int level=0;
+        while(current->parent!=nullptr){
+            current=current->parent;
+            level++;
+        } // нашли корень у требуемый уровень
+        return findFirstOnLevel(current,level);
+    }
+
+    Node* iterate(Node* current){
+        if(current==nullptr)return nullptr;
+        Node* n=iterateNextOnThisLevelNew(current);
+        if(n!=nullptr)return n;
+        return firstOnPrevLevel(current);
     }
 
     void destroy(Node* node){

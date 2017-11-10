@@ -34,6 +34,7 @@ int h(Node* root){
 
 namespace code_tree{
     Node* findFirstOnLevel(Node* elem, int n);
+    Node* splitESCSymbol(Node* esc, char symbol);
 }
 
 Node* first(Node* n){
@@ -162,7 +163,12 @@ void testUpdating(){
 }
 
 int main(){
-    testUpdating();
+    cout<<encode("abrakadabra")<<endl;
+    cout<<decode(encode("//Node* esc=new Node('e',1,nullptr,nullptr,nullptr);"))<<endl;
+    //Node* esc=new Node('e',1,nullptr,nullptr,nullptr);
+    //print(splitESCSymbol(esc,'a'));
+    //print(splitESCSymbol(esc,'b'));
+    //print(splitESCSymbol(esc,'r'));
 
     return 0;
 }

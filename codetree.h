@@ -19,8 +19,11 @@ namespace code_tree {
 
     bool isLeft(Node* node);
     Node* iterate(Node* current);
-    void incrementWeight(Node* n);
+    void incrementWeight(Node* n); // call on leaf only!
     void destroy(Node* node);
+
+    char* encode(char* in);
+    char* decode(char* in);
 }
 
 #endif // CODETREE

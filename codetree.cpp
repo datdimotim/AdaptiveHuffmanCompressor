@@ -103,12 +103,114 @@ namespace code_tree {
         return firstOnPrevLevel(current);
     }
 
+    Node* splitESCSymbol(Node* esc, char symbol){
+        Node* root=new Node(0,
+                            1,
+                            esc->parent,
+                            esc,
+                            new Node(symbol,1,nullptr,nullptr,nullptr)
+                            );
+        if(esc->parent!=nullptr){
+            if(isLeft(esc))root->parent->left=root;
+                else root->parent->right=root;
+        }
+        esc->parent=root;
+        root->right->parent=root;
+        incrementWeight(root);
+        return root->right;
+    }
+
+    int lenCode(Node* n){
+        if(n->parent==nullptr)return 0;
+        else return 1+lenCode(n->parent);
+    }
+
+    int bitCode(char* code, int offset, Node* symbol){
+        int len=lenCode(symbol);
+        for(int i=0;i<len;i++){
+            code[offset+len-1-i]=(isLeft(symbol)?'0':'1');
+            symbol=symbol->parent;
+        }
+        return len;
+    }
+
+    const int MSG_LEN=10000;
+    char* encode(char* in){
+        if((*in)=='\0')return "";
+        char* code=new char[MSG_LEN];
+        Node* symbols[256]={nullptr};
+        Node* esc=new Node(0,1,nullptr,nullptr,nullptr);
+        unsigned char current;
+        int indexCode=0;
+
+        unsigned char firstChar=*(in++);
+        code[indexCode++]=firstChar;
+        symbols[firstChar]=splitESCSymbol(esc,firstChar);
+
+        while((current=*in)!='\0'){
+            if(symbols[current]==nullptr){
+                indexCode+=(bitCode(code,indexCode,esc));
+                symbols[current]=splitESCSymbol(esc,current);
+                code[indexCode++]=current;
+            }
+            else{
+                indexCode+=(bitCode(code,indexCode,symbols[current]));
+                incrementWeight(symbols[current]);
+            }
+            in++;
+        }
+        code[indexCode]='\0';
+        return code;
+    }
+
+    Node* symbolByCode(Node* root, char* &code){
+        while(true){
+            if(root->left==nullptr)return root;
+            char c=*(code++);
+            if(c=='0'){
+                root=root->left;
+                continue;
+            }
+            if(c=='1'){
+                root=root->right;
+                continue;
+            }
+            throw "error code";
+        }
+    }
+
+    char* decode(char* in){
+        if((*in)=='\0')return "";
+        char* code=new char[MSG_LEN];
+        Node* esc=new Node(0,1,nullptr,nullptr,nullptr);
+        int indexCode=0;
+
+        int firstSymbol=*(in++);
+        splitESCSymbol(esc,firstSymbol);
+        Node* root=esc->parent;
+        code[indexCode++]=firstSymbol;
+
+        while(true){
+            if((*in)=='\0')break;
+            Node* symbol=symbolByCode(root,in);
+            if(symbol!=esc){
+                code[indexCode++]=symbol->symbol;
+                incrementWeight(symbol);
+            }
+            else{
+                char newSymbol=*(in++);
+                code[indexCode++]=newSymbol;
+                splitESCSymbol(esc,newSymbol);
+            }
+        }
+        code[indexCode]='\0';
+        return code;
+    }
+
     void destroy(Node* node){
         if(node==nullptr)return;
         destroy(node->left);
         destroy(node->right);
         delete node;
     }
-
-
 }

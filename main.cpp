@@ -41,6 +41,32 @@ Node* first(Node* n){
     return findFirstOnLevel(n,h(n));
 }
 
+void print(Node* elem){
+    Node* next=first(elem);
+    while(next!=nullptr){
+        cout<<"node num="<<(int)next->symbol<<" w= "<<next->weight<<endl;
+        next=iterate(next);
+    }
+    cout<<"======"<<endl;
+}
+
+void recKLP(Node* elem){
+    if(elem==nullptr){
+        cout<<"$";
+        return;
+    }
+    cout<<"("<<(int)elem->symbol;
+    recKLP(elem->left);
+    recKLP(elem->right);
+    cout<<")";
+}
+
+void printKLP(Node* elem){
+    while(elem->parent!=nullptr)elem=elem->parent;
+    recKLP(elem);
+    cout<<endl;
+}
+
 void test(){
     Node** nodes=new Node*[11];
     for(int i=0;i<11;i++)nodes[i]=new Node(i,i,nullptr,nullptr,nullptr);
@@ -68,13 +94,24 @@ void test(){
     nodes[2]->weight=2;
     nodes[3]->weight=3;
 
+    int step=0;
     while(true){
-        incrementWeight(nodes[rand()%11]);
+        step++;
+        int r=rand()%11;
+        if(nodes[r]->left!=nullptr)continue;
+        cout<<step<<endl;
+        //if(step==55){
+            //print(nodes[0]);
+            //printKLP(nodes[0]);
+            //cout<<"r="<<r<<endl;
+        //}
+        incrementWeight(nodes[r]);
         Node* next=first(nodes[0]);
         int prevWeight=next->weight;
         while(next!=nullptr){
             if(prevWeight>next->weight){
-                cout<<"error"<<endl;
+                cout<<"error on step="<<step<<endl;
+                print(next);
                 return;
             }
             prevWeight=next->weight;

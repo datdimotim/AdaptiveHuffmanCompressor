@@ -5,12 +5,6 @@ using namespace std;
 
 namespace code_tree {
 
-    void updateWeights(Node* node){
-        if(node->parent==nullptr)return;
-        node->parent->weight=node->parent->left->weight+node->parent->right->weight;
-        updateWeights(node->parent);
-    }
-
     void resolve(Node* problem){
         Node* next=iterate(problem);
         Node* target=next;
@@ -24,16 +18,14 @@ namespace code_tree {
             else parentProblem->right=target;
         problem->parent=parentTarget;
         target->parent=parentProblem;
-        updateWeights(problem);
-        updateWeights(target);
     }
 
     void incrementWeight(Node* n){
         n->weight++;
-        updateWeights(n);
+        if(n->parent==nullptr)return;
         Node* next=iterate(n);
-        if(next==nullptr)return;
         if(next->weight<n->weight)resolve(n);
+        incrementWeight(n->parent);
     }
 
     bool isLeft(Node* node){

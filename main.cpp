@@ -99,7 +99,6 @@ void test(){
         step++;
         int r=rand()%11;
         if(nodes[r]->left!=nullptr)continue;
-        cout<<step<<endl;
         //if(step==55){
             //print(nodes[0]);
             //printKLP(nodes[0]);
@@ -120,9 +119,7 @@ void test(){
     }
 }
 
-int main(){
-    test();
-    return 0;
+void testUpdating(){
     Node** nodes=new Node*[11];
     for(int i=0;i<11;i++)nodes[i]=new Node(i,i,nullptr,nullptr,nullptr);
 
@@ -162,6 +159,10 @@ int main(){
         incrementWeight(nodes[n]);
 
     }
+}
+
+int main(){
+    testUpdating();
 
     return 0;
 }

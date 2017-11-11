@@ -8,7 +8,8 @@ namespace code_tree {
     void resolve(Node* problem){
         Node* next=iterate(problem);
         Node* target=next;
-        while((next=iterate(next))->weight<problem->weight)target=next;
+        while((next=iterate(next))->weight<problem->weight)
+            if(next!=problem->parent)target=next;
 
         Node* parentTarget=target->parent;
         Node* parentProblem=problem->parent;
@@ -24,7 +25,7 @@ namespace code_tree {
         n->weight++;
         if(n->parent==nullptr)return;
         Node* next=iterate(n);
-        if(next->weight<n->weight)resolve(n);
+        if(next->weight<n->weight&&next!=n->parent)resolve(n);
         incrementWeight(n->parent);
     }
 
@@ -105,7 +106,7 @@ namespace code_tree {
 
     Node* splitESCSymbol(Node* esc, char symbol){
         Node* root=new Node(0,
-                            1,
+                            0,
                             esc->parent,
                             esc,
                             new Node(symbol,1,nullptr,nullptr,nullptr)
@@ -134,12 +135,19 @@ namespace code_tree {
         return len;
     }
 
-    const int MSG_LEN=10000;
+    char* emptyString(){
+        char* s=new char[1];
+        s[0]='\0';
+        return s;
+    }
+
+    const int MSG_LEN=1000000;
+
     char* encode(char* in){
-        if((*in)=='\0')return "";
+        if((*in)=='\0')return emptyString();
         char* code=new char[MSG_LEN];
         Node* symbols[256]={nullptr};
-        Node* esc=new Node(0,1,nullptr,nullptr,nullptr);
+        Node* esc=new Node(0,0,nullptr,nullptr,nullptr);
         unsigned char current;
         int indexCode=0;
 
@@ -160,6 +168,7 @@ namespace code_tree {
             in++;
         }
         code[indexCode]='\0';
+        destroy(esc);
         return code;
     }
 
@@ -180,9 +189,9 @@ namespace code_tree {
     }
 
     char* decode(char* in){
-        if((*in)=='\0')return "";
+        if((*in)=='\0')return emptyString();
         char* code=new char[MSG_LEN];
-        Node* esc=new Node(0,1,nullptr,nullptr,nullptr);
+        Node* esc=new Node(0,0,nullptr,nullptr,nullptr);
         int indexCode=0;
 
         int firstSymbol=*(in++);
@@ -204,13 +213,23 @@ namespace code_tree {
             }
         }
         code[indexCode]='\0';
+        destroy(esc);
         return code;
     }
 
-    void destroy(Node* node){
-        if(node==nullptr)return;
-        destroy(node->left);
-        destroy(node->right);
-        delete node;
+    Node* rootOfTree(Node* n){
+        while (n->parent!=nullptr)n=n->parent;
+        return n;
+    }
+
+    void destroyRec(Node* n){
+        if(n==nullptr)return;
+        destroyRec(n->left);
+        destroyRec(n->right);
+        delete n;
+    }
+
+    void destroy(Node* n){
+        destroyRec(rootOfTree(n));
     }
 }

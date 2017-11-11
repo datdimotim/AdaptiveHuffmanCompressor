@@ -5,32 +5,39 @@ using namespace std;
 
 namespace code_tree {
 
-    void resolve(Node* problem){
-        Node* next=iterate(problem);
-        Node* target=next;
-        while((next=iterate(next))->weight<problem->weight)
-            if(next!=problem->parent)target=next;
-
-        Node* parentTarget=target->parent;
-        Node* parentProblem=problem->parent;
-        if(isLeft(target)) parentTarget->left=problem;
-            else parentTarget->right=problem;
-        if(isLeft(problem))parentProblem->left=target;
-            else parentProblem->right=target;
-        problem->parent=parentTarget;
-        target->parent=parentProblem;
-    }
-
-    void incrementWeight(Node* n){
-        n->weight++;
-        if(n->parent==nullptr)return;
-        Node* next=iterate(n);
-        if(next->weight<n->weight&&next!=n->parent)resolve(n);
-        incrementWeight(n->parent);
-    }
+    struct Node{
+        char symbol;
+        long weight;
+        Node* parent;
+        Node* left;
+        Node* right;
+        Node(char symbol, long weight, Node* parent, Node* left, Node* right){
+            this->symbol=symbol;
+            this->weight=weight;
+            this->parent=parent;
+            this->left=left;
+            this->right=right;
+        }
+    };
 
     bool isLeft(Node* node){
         return node==node->parent->left;
+    }
+
+    Node* rootOfTree(Node* n){
+        while (n->parent!=nullptr)n=n->parent;
+        return n;
+    }
+
+    void destroyRec(Node* n){
+        if(n==nullptr)return;
+        destroyRec(n->left);
+        destroyRec(n->right);
+        delete n;
+    }
+
+    void destroy(Node* n){
+        destroyRec(rootOfTree(n));
     }
 
     // сверху - влево
@@ -102,6 +109,30 @@ namespace code_tree {
         Node* n=iterateNextOnThisLevel(current);
         if(n!=nullptr)return n;
         return firstOnPrevLevel(current);
+    }
+
+    void resolve(Node* problem){
+        Node* next=iterate(problem);
+        Node* target=next;
+        while((next=iterate(next))->weight<problem->weight)
+            if(next!=problem->parent)target=next;
+
+        Node* parentTarget=target->parent;
+        Node* parentProblem=problem->parent;
+        if(isLeft(target)) parentTarget->left=problem;
+            else parentTarget->right=problem;
+        if(isLeft(problem))parentProblem->left=target;
+            else parentProblem->right=target;
+        problem->parent=parentTarget;
+        target->parent=parentProblem;
+    }
+
+    void incrementWeight(Node* n){
+        n->weight++;
+        if(n->parent==nullptr)return;
+        Node* next=iterate(n);
+        if(next->weight<n->weight&&next!=n->parent)resolve(n);
+        incrementWeight(n->parent);
     }
 
     Node* splitESCSymbol(Node* esc, char symbol){
@@ -215,21 +246,5 @@ namespace code_tree {
         code[indexCode]='\0';
         destroy(esc);
         return code;
-    }
-
-    Node* rootOfTree(Node* n){
-        while (n->parent!=nullptr)n=n->parent;
-        return n;
-    }
-
-    void destroyRec(Node* n){
-        if(n==nullptr)return;
-        destroyRec(n->left);
-        destroyRec(n->right);
-        delete n;
-    }
-
-    void destroy(Node* n){
-        destroyRec(rootOfTree(n));
     }
 }

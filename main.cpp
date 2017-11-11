@@ -103,7 +103,7 @@ void test(){
         //if(step==55){
             //print(nodes[0]);
             //printKLP(nodes[0]);
-            //cout<<"r="<<r<<endl;
+            cout<<step<<endl;
         //}
         incrementWeight(nodes[r]);
         Node* next=first(nodes[0]);
@@ -162,14 +162,19 @@ void testUpdating(){
     }
 }
 
-int main(){
-    cout<<encode("abrakadabra")<<endl;
-    cout<<decode(encode("//Node* esc=new Node('e',1,nullptr,nullptr,nullptr);"))<<endl;
+void codeDecodeTest(){
+    cout<<encode("abrakadabra!")<<endl;
+    cout<<decode(encode("В СССР стихотворение «Баллада о детстве» впервые было официально опубликовано в 8-м номере журнала «Аврора» за 1987 год[12]. Фирма «Мелодия» выпустила песню в 1990 году на одноимённой пластинке (четырнадцатой "))<<endl;
+    //cout<<encode("//Node* esc=new Node('e',1,nullptr,nullptr,nullptr);")<<endl;
+    //cout<<decode(encode("//Node* esc=new Node('e',1,nullptr,nullptr,nullptr);"))<<endl;
     //Node* esc=new Node('e',1,nullptr,nullptr,nullptr);
     //print(splitESCSymbol(esc,'a'));
     //print(splitESCSymbol(esc,'b'));
     //print(splitESCSymbol(esc,'r'));
+}
 
+int main(){
+    codeDecodeTest();
     return 0;
 }
 

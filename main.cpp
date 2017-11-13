@@ -12,20 +12,20 @@ using namespace std;
 using namespace code_tree;
 
 void test(){
-    while(true){
-        char code[1000];
-        scanf("%s",code);
+    //while(true){
+        char code[1000]="(составление актов описания сохранности, профилактическая консервация и реставрация, упаковка и распаковка экспонатов). Проведено 150 заседаний Реставрационной комиссии, на которых рассматривались самые важные ";
+        //scanf("%s",code);
         cout<<encode(code)<<endl;
         cout<<decode(encode(code))<<endl<<endl;
-    }
+    //}
 }
 
 int main(){
     test();
-    cout<<"Введите закодированную строку"<<endl;
-    char code[1000];
-    scanf("%s",code);
-    cout<<decode(code)<<endl;
+    //cout<<"Введите закодированную строку"<<endl;
+    //char code[1000];
+    //scanf("%s",code);
+    //cout<<decode(code)<<endl;
     return 0;
 }
 

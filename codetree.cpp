@@ -18,6 +18,8 @@ namespace code_tree {
         Node* parent;
         Node* left;
         Node* right;
+        Node* next=nullptr;
+        Node* back=nullptr;
         Node(char symbol, long weight, Node* parent, Node* left, Node* right){
             this->symbol=symbol;
             this->weight=weight;
@@ -112,6 +114,7 @@ namespace code_tree {
     }
 
     Node* iterate(Node* current){
+        //return current->next;
         if(current==nullptr)return nullptr;
         Node* n=iterateNextOnThisLevel(current);
         if(n!=nullptr)return n;
@@ -132,6 +135,18 @@ namespace code_tree {
             else parentProblem->right=target;
         problem->parent=parentTarget;
         target->parent=parentProblem;
+
+        Node* tn=target->next;
+        target->next=problem->next;
+        target->next->back=target;
+        problem->next=tn;
+        problem->next->back=problem;
+
+        Node* tb=target->back;
+        target->back=problem->back;
+        target->back->next=target;
+        problem->back=tb;
+        problem->back->next=problem;
     }
 
     void incrementWeight(Node* n){
@@ -155,6 +170,14 @@ namespace code_tree {
         }
         esc->parent=root;
         root->right->parent=root;
+
+        root->next=esc->next;
+        if(root->next!=nullptr)root->next->back=root;
+        root->back=root->right;
+        root->back->next=root;
+        esc->next=root->back;
+        esc->next->back=esc;
+
         incrementWeight(root);
         return root->right;
     }

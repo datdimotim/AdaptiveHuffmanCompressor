@@ -6,12 +6,10 @@
 // Бинарные деревья и алгоритмы сжатия
 
 #include"codetree.h"
-
 #include<iostream>
 using namespace std;
 
 namespace code_tree {
-
     struct Node{
         char symbol;
         long weight;
@@ -49,82 +47,10 @@ namespace code_tree {
         destroyRec(rootOfTree(n));
     }
 
-    // сверху - влево
-    // слева - вправо
-    // справа- вверх
-    Node* iterateNextOnThisLevel(Node* current){
-        if(current==nullptr)return nullptr;
-        int level=0;
-        Node* prev=current;
-
-        current=current->parent;
-        if(current==nullptr)return nullptr;
-        level--;
-
-        while(level!=0){
-            if(prev==current->parent){ // сверху
-                if(current->left!=nullptr){
-                    prev=current;
-                    current=current->left;
-                    level++;
-                }
-                else{
-                    if(current->parent==nullptr)return nullptr;
-                    prev=current;
-                    current=current->parent;
-                    level--;
-                }
-                continue;
-            }
-
-            if(current->left==prev){ // слева
-                level++;
-                prev=current;
-                current=current->right;
-                continue;
-            }
-
-            if(current->right==prev){ // справа
-                if(current->parent==nullptr)return nullptr;
-                level--;
-                prev=current;
-                current=current->parent;
-                continue;
-            }
-        }
-        return current;
-    }
-
-    Node* findFirstOnLevel(Node* root, int level){
-        if(root==nullptr)return nullptr;
-        if(level==1)return root;
-        Node* f=findFirstOnLevel(root->left,level-1);
-        if(f!=nullptr)return f;
-        f=findFirstOnLevel(root->right,level-1);
-        return f;
-    }
-
-    Node* firstOnPrevLevel(Node* current){
-        int level=0;
-        while(current->parent!=nullptr){
-            current=current->parent;
-            level++;
-        } // нашли корень у требуемый уровень
-        return findFirstOnLevel(current,level);
-    }
-
-    Node* iterate(Node* current){
-        return current->next;
-        if(current==nullptr)return nullptr;
-        Node* n=iterateNextOnThisLevel(current);
-        if(n!=nullptr)return n;
-        return firstOnPrevLevel(current);
-    }
-
     void resolve(Node* problem){
-        Node* next=iterate(problem);
+        Node* next=problem->next;
         Node* target=next;
-        while((next=iterate(next))->weight<problem->weight)
+        while((next=next->next)->weight<problem->weight)
             if(next!=problem->parent)target=next;
 
         Node* parentTarget=target->parent;
@@ -152,8 +78,8 @@ namespace code_tree {
     void incrementWeight(Node* n){
         n->weight++;
         if(n->parent==nullptr)return;
-        Node* next=iterate(n);
-        if(next==n->parent)next=iterate(next);
+        Node* next=n->next;
+        if(next==n->parent)next=next->next;
         if(next!=nullptr&&next->weight<n->weight)resolve(n);
         incrementWeight(n->parent);
     }
@@ -197,97 +123,8 @@ namespace code_tree {
         return len;
     }
 
-    char* emptyString(){
-        char* s=new char[1];
-        s[0]='\0';
-        return s;
-    }
-
-    const int MSG_LEN=1000000;
-
     Node* initESC(){
         return new Node(0,0,nullptr,nullptr,nullptr);
-    }
-
-    char* encode(char* in){
-        if((*in)=='\0')return emptyString();
-        char* code=new char[MSG_LEN];
-        Node* symbols[256]={nullptr};
-        Node* esc=initESC();
-        unsigned char current;
-        int indexCode=0;
-
-        unsigned char firstChar=*(in++);
-        code[indexCode++]=firstChar;
-        symbols[firstChar]=splitESCSymbol(esc,firstChar);
-
-        while((current=*in)!='\0'){
-            if(symbols[current]==nullptr){
-                indexCode+=(bitCode(code,indexCode,esc));
-                symbols[current]=splitESCSymbol(esc,current);
-                code[indexCode++]=current;
-            }
-            else{
-                indexCode+=(bitCode(code,indexCode,symbols[current]));
-                incrementWeight(symbols[current]);
-            }
-            in++;
-        }
-        code[indexCode]='\0';
-
-        while(esc->next!=nullptr){
-            cout<<esc->weight;
-            if(esc->weight>esc->next->weight)throw "error!!!";
-            esc=esc->next;
-        }
-
-        destroy(esc);
-        return code;
-    }
-
-    Node* symbolByCode(Node* root, char* &code){
-        while(true){
-            if(root->left==nullptr)return root;
-            char c=*(code++);
-            if(c=='0'){
-                root=root->left;
-                continue;
-            }
-            if(c=='1'){
-                root=root->right;
-                continue;
-            }
-            throw "error code";
-        }
-    }
-
-    char* decode(char* in){
-        if((*in)=='\0')return emptyString();
-        char* code=new char[MSG_LEN];
-        Node* esc=initESC();
-        int indexCode=0;
-
-        int firstSymbol=*(in++);
-        splitESCSymbol(esc,firstSymbol);
-        Node* root=esc->parent;
-        code[indexCode++]=firstSymbol;
-
-        while(true){
-            if((*in)=='\0')break;
-            Node* symbol=symbolByCode(root,in);
-            if(symbol!=esc){
-                code[indexCode++]=symbol->symbol;
-                incrementWeight(symbol);
-            }
-            else{
-                char newSymbol=*(in++);
-                code[indexCode++]=newSymbol;
-                splitESCSymbol(esc,newSymbol);
-            }
-        }
-        code[indexCode]='\0';
-        destroy(esc);
-        return code;
     }
 
     void encode(istream &in, ostream &code){
@@ -360,7 +197,6 @@ namespace code_tree {
         while(esc->next!=nullptr){
             cout<<esc->next->weight<<"  "<<esc->next->symbol<<endl;
             if(esc->weight>esc->next->weight)throw "error!!!";
-
             esc=esc->next;
         }
 

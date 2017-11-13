@@ -114,7 +114,7 @@ namespace code_tree {
     }
 
     Node* iterate(Node* current){
-        //return current->next;
+        return current->next;
         if(current==nullptr)return nullptr;
         Node* n=iterateNextOnThisLevel(current);
         if(n!=nullptr)return n;
@@ -153,13 +153,14 @@ namespace code_tree {
         n->weight++;
         if(n->parent==nullptr)return;
         Node* next=iterate(n);
-        if(next->weight<n->weight&&next!=n->parent)resolve(n);
+        if(next==n->parent)next=iterate(next);
+        if(next!=nullptr&&next->weight<n->weight)resolve(n);
         incrementWeight(n->parent);
     }
 
     Node* splitESCSymbol(Node* esc, char symbol){
         Node* root=new Node(0,
-                            0,
+                            esc->weight,
                             esc->parent,
                             esc,
                             new Node(symbol,1,nullptr,nullptr,nullptr)
@@ -204,11 +205,15 @@ namespace code_tree {
 
     const int MSG_LEN=1000000;
 
+    Node* initESC(){
+        return new Node(0,0,nullptr,nullptr,nullptr);
+    }
+
     char* encode(char* in){
         if((*in)=='\0')return emptyString();
         char* code=new char[MSG_LEN];
         Node* symbols[256]={nullptr};
-        Node* esc=new Node(0,0,nullptr,nullptr,nullptr);
+        Node* esc=initESC();
         unsigned char current;
         int indexCode=0;
 
@@ -229,6 +234,13 @@ namespace code_tree {
             in++;
         }
         code[indexCode]='\0';
+
+        while(esc->next!=nullptr){
+            cout<<esc->weight;
+            if(esc->weight>esc->next->weight)throw "error!!!";
+            esc=esc->next;
+        }
+
         destroy(esc);
         return code;
     }
@@ -252,7 +264,7 @@ namespace code_tree {
     char* decode(char* in){
         if((*in)=='\0')return emptyString();
         char* code=new char[MSG_LEN];
-        Node* esc=new Node(0,0,nullptr,nullptr,nullptr);
+        Node* esc=initESC();
         int indexCode=0;
 
         int firstSymbol=*(in++);
@@ -276,5 +288,82 @@ namespace code_tree {
         code[indexCode]='\0';
         destroy(esc);
         return code;
+    }
+
+    void encode(istream &in, ostream &code){
+        if(in.peek()==EOF)return;
+        Node* symbols[256]={nullptr};
+        Node* esc=initESC();
+        unsigned char current;
+
+        unsigned char firstChar=in.get();
+        code<<firstChar;
+        symbols[firstChar]=splitESCSymbol(esc,firstChar);
+
+        while(in.peek()!=EOF){
+            current=in.get();
+            if(symbols[current]==nullptr){
+                char bits[256];
+                int len=bitCode(bits,0,esc);
+                for(int i=0;i<len;i++)code<<bits[i];
+                symbols[current]=splitESCSymbol(esc,current);
+                code<<current;
+            }
+            else{
+                char bits[256];
+                int len=bitCode(bits,0,symbols[current]);
+                for(int i=0;i<len;i++)code<<bits[i];
+                incrementWeight(symbols[current]);
+            }
+        }
+        destroy(esc);
+    }
+
+    Node* symbolByCodeStream(Node* root, istream &code){
+        while(true){
+            if(root->left==nullptr)return root;
+            char c=code.get();
+            if(c=='0'){
+                root=root->left;
+                continue;
+            }
+            if(c=='1'){
+                root=root->right;
+                continue;
+            }
+            throw "error code";
+        }
+    }
+
+    void decode(istream &in, ostream &code){
+        if(in.peek()==EOF)return;
+        Node* esc=initESC();
+
+        unsigned char firstSymbol=in.get();
+        splitESCSymbol(esc,firstSymbol);
+        Node* root=esc->parent;
+        code<<firstSymbol;
+
+        while(in.peek()!=EOF){
+            Node* symbol=symbolByCodeStream(root, in);
+            if(symbol!=esc){
+                code<<symbol->symbol;
+                incrementWeight(symbol);
+            }
+            else{
+                char newSymbol=in.get();
+                code<<newSymbol;
+                splitESCSymbol(esc,newSymbol);
+            }
+        }
+
+        while(esc->next!=nullptr){
+            cout<<esc->next->weight<<"  "<<esc->next->symbol<<endl;
+            if(esc->weight>esc->next->weight)throw "error!!!";
+
+            esc=esc->next;
+        }
+
+        destroy(esc);
     }
 }

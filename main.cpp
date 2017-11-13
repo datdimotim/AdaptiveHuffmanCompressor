@@ -6,17 +6,28 @@
 // Бинарные деревья и алгоритмы сжатия
 
 #include <iostream>
+#include<fstream>
 #include"codetree.h"
 
 using namespace std;
 using namespace code_tree;
 
+// a0b00r0100k01100d011011001000!
 void test(){
     //while(true){
-        char code[1000]="(составление актов описания сохранности, профилактическая консервация и реставрация, упаковка и распаковка экспонатов). Проведено 150 заседаний Реставрационной комиссии, на которых рассматривались самые важные ";
+        char code[1000]="abrakadabra!";
         //scanf("%s",code);
         cout<<encode(code)<<endl;
         cout<<decode(encode(code))<<endl<<endl;
+        ifstream input("msg");
+        ofstream output("code");
+        encode(input, output);
+        output.close();
+        input.close();
+        ifstream coded("code");
+        ofstream decoded("encoded");
+        decode(coded, decoded);
+
     //}
 }
 

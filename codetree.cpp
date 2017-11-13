@@ -194,12 +194,6 @@ namespace code_tree {
             }
         }
 
-        while(esc->next!=nullptr){
-            cout<<esc->next->weight<<"  "<<esc->next->symbol<<endl;
-            if(esc->weight>esc->next->weight)throw "error!!!";
-            esc=esc->next;
-        }
-
         destroy(esc);
     }
 }

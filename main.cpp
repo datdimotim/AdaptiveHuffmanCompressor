@@ -9,6 +9,9 @@
 #include<fstream>
 #include"codetree.h"
 
+#include"bitstream.h"
+#include<sstream>
+
 using namespace std;
 using namespace code_tree;
 
@@ -16,12 +19,24 @@ using namespace code_tree;
 void test(){
     ifstream input("msg");
     ofstream output("code");
-    encode(input, output);
+    BitOutputStream bos(output);
+    encode(input, bos);
     output.close();
     input.close();
     ifstream coded("code");
     ofstream decoded("encoded");
-    decode(coded, decoded);
+    BitInputStream bis(coded);
+    decode(bis, decoded);
+}
+
+void test2(){
+    stringstream in;
+    in<<"abrakadabra!\n";
+    stringstream ss;
+    BitOutputStream bos(ss);
+    BitInputStream bis(ss);
+    encode(in,bos);
+    decode(bis, cout);
 }
 
 int main(){

@@ -6,6 +6,7 @@
 // Бинарные деревья и алгоритмы сжатия
 
 #include"codetree.h"
+#include"bitstream.h"
 #include<iostream>
 using namespace std;
 
@@ -117,7 +118,7 @@ namespace code_tree {
     int bitCode(char* code, int offset, Node* symbol){
         int len=lenCode(symbol);
         for(int i=0;i<len;i++){
-            code[offset+len-1-i]=(isLeft(symbol)?'0':'1');
+            code[offset+len-1-i]=(isLeft(symbol)?0:1);
             symbol=symbol->parent;
         }
         return len;
@@ -127,14 +128,14 @@ namespace code_tree {
         return new Node(0,0,nullptr,nullptr,nullptr);
     }
 
-    void encode(istream &in, ostream &code){
-        if(in.peek()==EOF)return;
+    void encode(istream &in, BitOutputStream &code){
+        if(in.peek()==EOF)throw "empty file!";
         Node* symbols[256]={nullptr};
         Node* esc=initESC();
         unsigned char current;
 
-        unsigned char firstChar=in.get();
-        code<<firstChar;
+        unsigned const char firstChar=in.get();
+        code.writeChar(firstChar);
         symbols[firstChar]=splitESCSymbol(esc,firstChar);
 
         while(in.peek()!=EOF){
@@ -142,29 +143,36 @@ namespace code_tree {
             if(symbols[current]==nullptr){
                 char bits[256];
                 int len=bitCode(bits,0,esc);
-                for(int i=0;i<len;i++)code<<bits[i];
+                for(int i=0;i<len;i++)code.writeBit(bits[i]);
                 symbols[current]=splitESCSymbol(esc,current);
-                code<<current;
+                code.writeChar(current);
             }
             else{
                 char bits[256];
                 int len=bitCode(bits,0,symbols[current]);
-                for(int i=0;i<len;i++)code<<bits[i];
+                for(int i=0;i<len;i++)code.writeBit(bits[i]);
                 incrementWeight(symbols[current]);
             }
         }
+
+        char bits[256];
+        int len=bitCode(bits,0,esc);
+        for(int i=0;i<len;i++)code.writeBit(bits[i]);
+        code.writeChar(firstChar);
+
+        code.close();
         destroy(esc);
     }
 
-    Node* symbolByCodeStream(Node* root, istream &code){
+    Node* symbolByCodeStream(Node* root, BitInputStream &code){
         while(true){
             if(root->left==nullptr)return root;
-            char c=code.get();
-            if(c=='0'){
+            char c=code.readBit();
+            if(c==0){
                 root=root->left;
                 continue;
             }
-            if(c=='1'){
+            if(c==1){
                 root=root->right;
                 continue;
             }
@@ -172,23 +180,24 @@ namespace code_tree {
         }
     }
 
-    void decode(istream &in, ostream &code){
-        if(in.peek()==EOF)return;
+    void decode(BitInputStream &in, ostream &code){
+        //if(in.peek()==EOF)return;
         Node* esc=initESC();
 
-        unsigned char firstSymbol=in.get();
+        unsigned char const firstSymbol=in.readChar();
         splitESCSymbol(esc,firstSymbol);
         Node* root=esc->parent;
         code<<firstSymbol;
 
-        while(in.peek()!=EOF){
+        while(true){
             Node* symbol=symbolByCodeStream(root, in);
             if(symbol!=esc){
                 code<<symbol->symbol;
                 incrementWeight(symbol);
             }
             else{
-                char newSymbol=in.get();
+                char newSymbol=in.readChar();
+                if(newSymbol==firstSymbol)break;
                 code<<newSymbol;
                 splitESCSymbol(esc,newSymbol);
             }

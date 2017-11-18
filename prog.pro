@@ -4,8 +4,10 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 SOURCES += main.cpp \
-    codetree.cpp
+    codetree.cpp \
+    bitstream.cpp
 
 HEADERS += \
-    codetree.h
+    codetree.h \
+    bitstream.h
 

@@ -12,8 +12,8 @@
 #include"bitstream.h"
 
 namespace code_tree {
-    void encode(std::istream &in, BitOutputStream &code);
-    void decode(BitInputStream &in, std::ostream &code);
+    void encode(std::istream &in, std::ostream &code);
+    void decode(std::istream &in, std::ostream &code);
 }
 
 #endif // CODETREE

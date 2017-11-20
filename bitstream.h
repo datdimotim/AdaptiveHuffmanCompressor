@@ -10,7 +10,7 @@ public:
      char readChar();
 private:
     std::istream *is;
-     char buf;
+    char buf;
     int ind=8;
 };
 
@@ -23,7 +23,7 @@ public:
 
 private:
     std::ostream *os;
-     char buf=0;
+    char buf=0;
     int ind=0;
 };
 

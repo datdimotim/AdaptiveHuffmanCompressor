@@ -128,8 +128,9 @@ namespace code_tree {
         return new Node(0,0,nullptr,nullptr,nullptr);
     }
 
-    void encode(istream &in, BitOutputStream &code){
+    void encode(istream &in, ostream &codeStd){
         if(in.peek()==EOF)throw "empty file!";
+        BitOutputStream code(codeStd);
         Node* symbols[256]={nullptr};
         Node* esc=initESC();
 
@@ -179,7 +180,8 @@ namespace code_tree {
         }
     }
 
-    void decode(BitInputStream &in, ostream &code){
+    void decode(istream &inStd, ostream &code){
+        BitInputStream in(inStd);
         bool symbols[256]={false};
         Node* esc=initESC();
 

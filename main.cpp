@@ -11,6 +11,7 @@
 
 #include"bitstream.h"
 #include<sstream>
+#include<string.h>
 
 using namespace std;
 using namespace code_tree;
@@ -32,35 +33,40 @@ void test(){
     cout<<"decoded"<<endl;
 }
 
-void test2(){
-    //stringstream in;
-    //in<<"Яя!\n";
-    stringstream ss;
-    BitOutputStream bos(ss);
-    BitInputStream bis(ss);
-    bos.writeChar('я');
+const char* MSG_INFO="Неправильное команда. Пример команды:\n\thuffman -e input output\n\thuffman -d input output\n";
 
-    cout<<(int)'я'<<endl;
+int main(int c, char* args[]){
+    if(c!=4){
+        cout<<MSG_INFO;
+        return 0;
+    }
 
+    if(strcmp(args[2],args[3])==0){
+        cout<<"Имя входного файла совпадает с именем выходного!"<<endl;
+        return 0;
+    }
 
-    bos.close();
-    //encode(in,bos);
-    //decode(bis, cout);
+    ifstream input(args[2]);
+    if(!input){
+        cout<<"входной файл не найден!"<<endl;
+        return 0;
+    }
 
-    cout<<(int)bis.readBit();
-    cout<<(int)bis.readBit();
-    cout<<(int)bis.readBit();
-    cout<<(int)bis.readBit();
-    cout<<(int)bis.readBit();
-    cout<<(int)bis.readBit();
-    cout<<(int)bis.readBit();
-    cout<<(int)bis.readBit();
+    if(strcmp(args[1],"-e")==0){
+        ofstream output(args[3]);
+        BitOutputStream bos(output);
+        encode(input, bos);
+        return 0;
+    }
 
-}
+    if(strcmp(args[1],"-d")==0){
+        ofstream output(args[3]);
+        BitInputStream bis(input);
+        decode(bis, output);
+        return 0;
+    }
 
-int main(){
-    test();
-    //test2();
+    cout<<MSG_INFO;
     return 0;
 }
 
